@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+data/known_faces/*/
+data/model.yml
+data/labels.json
+data/logs/*.jsonl
+!data/known_faces/.gitkeep
+!data/logs/.gitkeep

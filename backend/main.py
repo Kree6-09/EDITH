@@ -1,0 +1,165 @@
+"""E.D.I.T.H. backend: FastAPI server for voice/camera-driven AI assistant."""
+from __future__ import annotations
+
+import base64
+import os
+import time
+
+import cv2
+import numpy as np
+from dotenv import load_dotenv
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+
+from brain import EdithBrain
+from logbook import log_sighting, recent_sightings
+from vision import FaceEngine
+
+load_dotenv()
+
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+
+app = FastAPI(title="E.D.I.T.H.")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+engine = FaceEngine()
+brain = EdithBrain()
+
+# Tracks the most recent recognition snapshot so voice commands like
+# "who is that" can answer without a fresh frame round-trip.
+last_seen: list[dict] = []
+last_seen_ts = 0.0
+_sighting_cooldown: dict[str, float] = {}
+COOLDOWN_SECONDS = 30.0
+
+
+def _decode_frame(data_url: str) -> np.ndarray:
+    header, _, b64data = data_url.partition(",")
+    raw = base64.b64decode(b64data or header)
+    arr = np.frombuffer(raw, dtype=np.uint8)
+    frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if frame is None:
+        raise ValueError("Could not decode frame")
+    return frame
+
+
+@app.websocket("/ws/vision")
+async def vision_ws(websocket: WebSocket) -> None:
+    global last_seen, last_seen_ts
+    await websocket.accept()
+    try:
+        while True:
+            data_url = await websocket.receive_text()
+            try:
+                frame = _decode_frame(data_url)
+            except ValueError:
+                continue
+            sightings = engine.recognize(frame)
+            last_seen = [
+                {"box": s.box, "name": s.name, "confidence": s.confidence, "known": s.known}
+                for s in sightings
+            ]
+            last_seen_ts = time.time()
+
+            for s in sightings:
+                key = s.name
+                now = time.time()
+                if now - _sighting_cooldown.get(key, 0) > COOLDOWN_SECONDS:
+                    _sighting_cooldown[key] = now
+                    log_sighting(s.name, s.confidence, s.known)
+
+            await websocket.send_json({"faces": last_seen})
+    except WebSocketDisconnect:
+        pass
+
+
+class ChatRequest(BaseModel):
+    text: str
+
+
+class ChatResponse(BaseModel):
+    reply: str
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+def chat(req: ChatRequest) -> ChatResponse:
+    text = req.text.strip()
+    lowered = text.lower()
+
+    identify_triggers = ("who is that", "who is this", "who do you see", "who am i looking at", "identify")
+    if any(trigger in lowered for trigger in identify_triggers):
+        if time.time() - last_seen_ts > 5:
+            return ChatResponse(reply="I don't have a current camera reading. Point the camera at the subject.")
+        known = [f for f in last_seen if f["known"]]
+        if not known:
+            if last_seen:
+                return ChatResponse(reply=f"I see {len(last_seen)} face(s) in frame, but none match anyone enrolled.")
+            return ChatResponse(reply="No faces currently in view.")
+        names = ", ".join(sorted({f["name"] for f in known}))
+        return ChatResponse(reply=f"I recognize {names} in frame.")
+
+    return ChatResponse(reply=brain.respond(text))
+
+
+class EnrollRequest(BaseModel):
+    name: str
+    image: str  # data URL
+
+
+class EnrollResponse(BaseModel):
+    success: bool
+    message: str
+
+
+@app.post("/api/faces/enroll", response_model=EnrollResponse)
+def enroll(req: EnrollRequest) -> EnrollResponse:
+    name = req.name.strip()
+    if not name:
+        return EnrollResponse(success=False, message="Name is required.")
+    try:
+        frame = _decode_frame(req.image)
+    except ValueError:
+        return EnrollResponse(success=False, message="Invalid image data.")
+    success, message = engine.enroll(name, frame)
+    return EnrollResponse(success=success, message=message)
+
+
+@app.get("/api/faces")
+def list_faces() -> dict:
+    return {"names": engine.known_names()}
+
+
+@app.delete("/api/faces/{name}")
+def delete_face(name: str) -> dict:
+    removed = engine.remove_person(name)
+    return {"removed": removed}
+
+
+@app.get("/api/log")
+def get_log(limit: int = 20) -> dict:
+    return {"sightings": recent_sightings(limit)}
+
+
+@app.get("/api/status")
+def status() -> dict:
+    return {
+        "online": True,
+        "known_faces": len(engine.known_names()),
+        "brain_connected": bool(os.environ.get("ANTHROPIC_API_KEY")),
+    }
+
+
+@app.get("/")
+def index() -> FileResponse:
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
