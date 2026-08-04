@@ -20,6 +20,7 @@ const cameraOffMsg = document.getElementById("cameraOffMsg");
 
 const startBtn = document.getElementById("startBtn");
 const micBtn = document.getElementById("micBtn");
+const switchCameraBtn = document.getElementById("switchCameraBtn");
 const enrollBtn = document.getElementById("enrollBtn");
 const enrollName = document.getElementById("enrollName");
 
@@ -46,6 +47,10 @@ let micOn = false;
 let listeningLoopActive = false;
 let latestFaces = [];
 let systemStarted = false;
+// "environment" = rear camera (better for scanning surroundings/people),
+// "user" = front camera (better for self-enrollment). "ideal" (not "exact")
+// so devices with only one camera don't throw OverconstrainedError.
+let currentFacingMode = "environment";
 
 function tickClock() {
   clockEl.textContent = new Date().toLocaleTimeString([], { hour12: false });
@@ -219,23 +224,51 @@ async function ensureCameraPermission() {
   return req.camera === "granted";
 }
 
+function acquireStream(facingMode) {
+  // Constrain resolution: phone cameras default to much higher resolutions than
+  // a webcam, which turns the enroll snapshot into a multi-MB data URL and makes
+  // that upload fail while smaller requests (chat, status) keep working fine.
+  return navigator.mediaDevices.getUserMedia({
+    video: { width: { ideal: 960 }, height: { ideal: 720 }, facingMode: { ideal: facingMode } },
+    audio: false,
+  });
+}
+
+function stopStream(stream) {
+  if (stream) stream.getTracks().forEach((track) => track.stop());
+}
+
 async function startCamera() {
   const granted = await ensureCameraPermission();
   if (!granted) throw new Error("Permiso de camara denegado");
 
-  // Constrain resolution: phone cameras default to much higher resolutions than
-  // a webcam, which turns the enroll snapshot into a multi-MB data URL and makes
-  // that upload fail while smaller requests (chat, status) keep working fine.
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: { ideal: 960 }, height: { ideal: 720 } },
-    audio: false,
-  });
+  const stream = await acquireStream(currentFacingMode);
   video.srcObject = stream;
   await video.play();
   resizeOverlay();
   cameraOffMsg.style.display = "none";
   requestAnimationFrame(drawOverlay);
   startVisionLoop();
+}
+
+async function switchCamera() {
+  const previousStream = video.srcObject;
+  const nextFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+  try {
+    const stream = await acquireStream(nextFacingMode);
+    stopStream(previousStream);
+    currentFacingMode = nextFacingMode;
+    video.srcObject = stream;
+    await video.play();
+    resizeOverlay();
+    appendLine("system", `Camara ${currentFacingMode === "environment" ? "trasera" : "frontal"} activada.`);
+  } catch (err) {
+    appendLine("system", `No se pudo cambiar de camara: ${err.message || err}`);
+  }
+}
+
+if (switchCameraBtn) {
+  switchCameraBtn.addEventListener("click", switchCamera);
 }
 
 // ---- Voice: native SpeechRecognition (Android) vs Web Speech API (browser) ----
@@ -410,6 +443,7 @@ startBtn.addEventListener("click", async () => {
     startBtn.textContent = "SISTEMA ACTIVO";
     micBtn.disabled = false;
     enrollBtn.disabled = false;
+    if (switchCameraBtn) switchCameraBtn.disabled = false;
     appendLine("system", "E.D.I.T.H. en linea. Camara y nucleo de razonamiento conectados.");
     speak("Sistemas en linea.");
     checkStatus();
