@@ -252,11 +252,16 @@ async function startCamera() {
 }
 
 async function switchCamera() {
-  const previousStream = video.srcObject;
-  const nextFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+  // Camera hardware is exclusive on most Android devices: the previous stream
+  // must be released before a new one can be opened, otherwise getUserMedia
+  // fails with "Could not start video source".
+  const previousFacingMode = currentFacingMode;
+  stopStream(video.srcObject);
+  video.srcObject = null;
+
+  const nextFacingMode = previousFacingMode === "environment" ? "user" : "environment";
   try {
     const stream = await acquireStream(nextFacingMode);
-    stopStream(previousStream);
     currentFacingMode = nextFacingMode;
     video.srcObject = stream;
     await video.play();
@@ -264,6 +269,14 @@ async function switchCamera() {
     appendLine("system", `Camara ${currentFacingMode === "environment" ? "trasera" : "frontal"} activada.`);
   } catch (err) {
     appendLine("system", `No se pudo cambiar de camara: ${err.message || err}`);
+    try {
+      const fallbackStream = await acquireStream(previousFacingMode);
+      video.srcObject = fallbackStream;
+      await video.play();
+      resizeOverlay();
+    } catch (fallbackErr) {
+      appendLine("system", "No se pudo restaurar la camara anterior.");
+    }
   }
 }
 
