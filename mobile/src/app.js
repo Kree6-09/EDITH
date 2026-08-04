@@ -238,6 +238,28 @@ function stopStream(stream) {
   if (stream) stream.getTracks().forEach((track) => track.stop());
 }
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Releasing the camera on Android isn't instantaneous even after track.stop():
+// the hardware session takes a moment to actually free up, so an immediate
+// getUserMedia() for the other camera can still race and fail with
+// "Could not start video source". Retry with a short backoff instead of
+// failing on the first race.
+async function acquireStreamWithRetry(facingMode, attempts = 4, delayMs = 350) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) await wait(delayMs);
+    try {
+      return await acquireStream(facingMode);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
+
 async function startCamera() {
   const granted = await ensureCameraPermission();
   if (!granted) throw new Error("Permiso de camara denegado");
@@ -258,10 +280,11 @@ async function switchCamera() {
   const previousFacingMode = currentFacingMode;
   stopStream(video.srcObject);
   video.srcObject = null;
+  await wait(300);
 
   const nextFacingMode = previousFacingMode === "environment" ? "user" : "environment";
   try {
-    const stream = await acquireStream(nextFacingMode);
+    const stream = await acquireStreamWithRetry(nextFacingMode);
     currentFacingMode = nextFacingMode;
     video.srcObject = stream;
     await video.play();
@@ -270,7 +293,7 @@ async function switchCamera() {
   } catch (err) {
     appendLine("system", `No se pudo cambiar de camara: ${err.message || err}`);
     try {
-      const fallbackStream = await acquireStream(previousFacingMode);
+      const fallbackStream = await acquireStreamWithRetry(previousFacingMode);
       video.srcObject = fallbackStream;
       await video.play();
       resizeOverlay();
