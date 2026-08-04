@@ -20,8 +20,8 @@ optional connection to a real LLM for open-ended conversation.
 - **Sighting log** — a running log of who's been seen and when, shown in the
   HUD.
 - **Conversational core** — local rule-based answers for time/date/status,
-  and (if you provide an `ANTHROPIC_API_KEY`) full LLM-backed conversation
-  via the Claude API.
+  and (if you provide an `ANTHROPIC_API_KEY` or `GROQ_API_KEY`) full
+  LLM-backed conversation via Claude or Groq.
 - **Text-to-speech** — spoken replies via the browser's `speechSynthesis` API.
 - **HUD-style interface** — dark sci-fi console with live optical feed,
   console/transcript panel, and status indicators.
@@ -36,7 +36,7 @@ frontend/        Browser HUD (camera capture, mic, TTS, chat UI)
 backend/         FastAPI server
   main.py        REST + WebSocket endpoints, serves the frontend
   vision.py      Face detection/recognition (OpenCV Haar cascade + LBPH)
-  brain.py       Command router + optional Claude API conversation
+  brain.py       Command router + optional Claude/Groq API conversation
   logbook.py     Append-only sighting log
 mobile/          Android app (Capacitor) — see mobile/README.md
 data/
@@ -54,7 +54,7 @@ WebSocket and handles the conversational logic.
 cd backend
 python3 -m venv .venv && source .venv/bin/activate   # optional but recommended
 pip install -r requirements.txt
-cp ../.env.example ../.env   # then edit .env and add ANTHROPIC_API_KEY (optional)
+cp ../.env.example ../.env   # then edit .env and add ANTHROPIC_API_KEY or GROQ_API_KEY (optional)
 ```
 
 ## Run
@@ -77,8 +77,9 @@ enable voice commands.
 - **Voice command**: say "Edith, what time is it?" or "Edith, who do you
   see?".
 - **Text command**: type into the console input and press SEND.
-- **Full conversation**: set `ANTHROPIC_API_KEY` in `.env` to let E.D.I.T.H.
-  answer open-ended questions via Claude instead of just local commands.
+- **Full conversation**: set `ANTHROPIC_API_KEY` (Claude) or `GROQ_API_KEY`
+  (Groq) in `.env` to let E.D.I.T.H. answer open-ended questions via an LLM
+  instead of just local commands.
 
 ## Android app
 

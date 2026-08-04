@@ -1,4 +1,4 @@
-"""E.D.I.T.H. conversational brain: local command handling + optional Claude API fallback."""
+"""E.D.I.T.H. conversational brain: local command handling + optional LLM fallback (Claude or Groq)."""
 from __future__ import annotations
 
 import os
@@ -15,24 +15,35 @@ SYSTEM_PROMPT = (
     "security-monitoring, and conversation assistant only."
 )
 
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
 _client = None
+_provider = None
 _client_checked = False
 
 
 def _get_client():
-    """Lazily construct the Anthropic client if a key is configured."""
-    global _client, _client_checked
+    """Lazily construct an LLM client: prefers Anthropic, falls back to Groq."""
+    global _client, _provider, _client_checked
     if _client_checked:
-        return _client
+        return _provider, _client
     _client_checked = True
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        return None
-    try:
-        import anthropic
-        _client = anthropic.Anthropic()
-    except Exception:
-        _client = None
-    return _client
+
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        try:
+            import anthropic
+            _client = anthropic.Anthropic()
+            _provider = "anthropic"
+        except Exception:
+            _client = None
+    elif os.environ.get("GROQ_API_KEY"):
+        try:
+            import groq
+            _client = groq.Groq()
+            _provider = "groq"
+        except Exception:
+            _client = None
+    return _provider, _client
 
 
 class EdithBrain:
@@ -61,24 +72,32 @@ class EdithBrain:
         if local is not None:
             return local
 
-        client = _get_client()
+        provider, client = _get_client()
         if client is None:
             return (
-                "My reasoning core isn't connected — set ANTHROPIC_API_KEY on the "
-                "server to enable full conversation. I can still handle time, date, "
-                "status checks, and face identification."
+                "My reasoning core isn't connected — set ANTHROPIC_API_KEY or "
+                "GROQ_API_KEY on the server to enable full conversation. I can "
+                "still handle time, date, status checks, and face identification."
             )
 
         self.history.append({"role": "user", "content": text})
         self.history = self.history[-20:]
         try:
-            response = client.messages.create(
-                model="claude-opus-5",
-                max_tokens=1024,
-                system=SYSTEM_PROMPT,
-                messages=self.history,
-            )
-            reply = next((b.text for b in response.content if b.type == "text"), "")
+            if provider == "anthropic":
+                response = client.messages.create(
+                    model="claude-opus-5",
+                    max_tokens=1024,
+                    system=SYSTEM_PROMPT,
+                    messages=self.history,
+                )
+                reply = next((b.text for b in response.content if b.type == "text"), "")
+            else:
+                response = client.chat.completions.create(
+                    model=GROQ_MODEL,
+                    max_tokens=1024,
+                    messages=[{"role": "system", "content": SYSTEM_PROMPT}, *self.history],
+                )
+                reply = response.choices[0].message.content or ""
             self.history.append({"role": "assistant", "content": reply})
             return reply or "I didn't catch a usable response — try again."
         except Exception as exc:  # noqa: BLE001

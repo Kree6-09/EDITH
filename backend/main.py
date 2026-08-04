@@ -153,7 +153,9 @@ def status() -> dict:
     return {
         "online": True,
         "known_faces": len(engine.known_names()),
-        "brain_connected": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "brain_connected": bool(
+            os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("GROQ_API_KEY")
+        ),
     }
 
 
