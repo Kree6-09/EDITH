@@ -1,0 +1,9 @@
+{
+  "appId": "com.edith.assistant",
+  "appName": "E.D.I.T.H.",
+  "webDir": "www",
+  "backgroundColor": "#030a0d",
+  "android": {
+    "allowMixedContent": true
+  }
+}

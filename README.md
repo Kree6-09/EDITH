@@ -36,6 +36,7 @@ backend/         FastAPI server
   vision.py      Face detection/recognition (OpenCV Haar cascade + LBPH)
   brain.py       Command router + optional Claude API conversation
   logbook.py     Append-only sighting log
+mobile/          Android app (Capacitor) — see mobile/README.md
 data/
   known_faces/   Per-person face crops (created as you enroll people)
   logs/          Sighting log (JSONL)
@@ -76,6 +77,14 @@ enable voice commands.
 - **Text command**: type into the console input and press SEND.
 - **Full conversation**: set `ANTHROPIC_API_KEY` in `.env` to let E.D.I.T.H.
   answer open-ended questions via Claude instead of just local commands.
+
+## Android app
+
+There's also a native Android app in `mobile/` (Capacitor) that reuses this
+HUD with native voice recognition and text-to-speech instead of the
+browser's Web Speech API, so voice commands work outside Chrome too. It
+connects to this same backend over the network — see `mobile/README.md` for
+how to get a build.
 
 ## Notes
 
