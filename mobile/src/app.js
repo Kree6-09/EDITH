@@ -223,7 +223,13 @@ async function startCamera() {
   const granted = await ensureCameraPermission();
   if (!granted) throw new Error("Permiso de camara denegado");
 
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  // Constrain resolution: phone cameras default to much higher resolutions than
+  // a webcam, which turns the enroll snapshot into a multi-MB data URL and makes
+  // that upload fail while smaller requests (chat, status) keep working fine.
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: { ideal: 960 }, height: { ideal: 720 } },
+    audio: false,
+  });
   video.srcObject = stream;
   await video.play();
   resizeOverlay();
@@ -376,6 +382,10 @@ enrollBtn.addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, image }),
     });
+    if (!res.ok) {
+      appendLine("system", `El servidor respondio ${res.status} al enrolar. Intenta con una foto mas chica o revisa el servidor.`);
+      return;
+    }
     const data = await res.json();
     appendLine("system", data.message);
     if (data.success) refreshFaces();
