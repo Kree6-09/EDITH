@@ -115,6 +115,11 @@ class FaceEngine:
 
         if not samples:
             self.trained = False
+            self.labels = {}
+            if os.path.exists(MODEL_PATH):
+                os.remove(MODEL_PATH)
+            if os.path.exists(LABELS_PATH):
+                os.remove(LABELS_PATH)
             return
 
         self.recognizer = cv2.face.LBPHFaceRecognizer_create()
