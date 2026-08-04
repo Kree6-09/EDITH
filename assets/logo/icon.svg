@@ -1,0 +1,69 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#0c1f26"/>
+      <stop offset="55%" stop-color="#061319"/>
+      <stop offset="100%" stop-color="#02070a"/>
+    </radialGradient>
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8ff9ff"/>
+      <stop offset="100%" stop-color="#33d9ec"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="1024" height="1024" rx="220" fill="url(#bg)"/>
+
+  <!-- faint scanlines -->
+  <g opacity="0.05">
+    <g stroke="#4df3ff" stroke-width="2">
+      <line x1="0" y1="120" x2="1024" y2="120"/>
+      <line x1="0" y1="260" x2="1024" y2="260"/>
+      <line x1="0" y1="400" x2="1024" y2="400"/>
+      <line x1="0" y1="540" x2="1024" y2="540"/>
+      <line x1="0" y1="680" x2="1024" y2="680"/>
+      <line x1="0" y1="820" x2="1024" y2="820"/>
+      <line x1="0" y1="900" x2="1024" y2="900"/>
+    </g>
+  </g>
+
+  <!-- outer reticle ring with glow -->
+  <circle cx="512" cy="512" r="392" fill="none" stroke="url(#cyan)" stroke-width="10" opacity="0.95" filter="url(#glow)"/>
+  <!-- inner faint ring -->
+  <circle cx="512" cy="512" r="352" fill="none" stroke="#4df3ff" stroke-width="3" opacity="0.35"/>
+
+  <!-- cardinal reticle ticks -->
+  <g stroke="#8ff9ff" stroke-width="10" stroke-linecap="round" filter="url(#softGlow)">
+    <line x1="512" y1="76"  x2="512" y2="132"/>
+    <line x1="512" y1="892" x2="512" y2="948"/>
+    <line x1="76"  y1="512" x2="132" y2="512"/>
+    <line x1="892" y1="512" x2="948" y2="512"/>
+  </g>
+
+  <!-- status dot -->
+  <circle cx="770" cy="256" r="16" fill="#8ff9ff" filter="url(#softGlow)"/>
+
+  <!-- monogram E, faceted/geometric -->
+  <g filter="url(#glow)">
+    <g fill="url(#cyan)">
+      <rect x="368" y="300" width="96"  height="424" rx="10"/>
+      <rect x="368" y="300" width="288" height="90"  rx="10"/>
+      <rect x="368" y="467" width="248" height="82"  rx="10"/>
+      <rect x="368" y="634" width="288" height="90"  rx="10"/>
+    </g>
+  </g>
+</svg>

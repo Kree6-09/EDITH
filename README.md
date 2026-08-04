@@ -1,4 +1,6 @@
-# E.D.I.T.H.
+<p align="center">
+  <img src="assets/logo/wordmark-1600x480.png" alt="E.D.I.T.H." width="600" />
+</p>
 
 *Even Dead, I'm The Hero* — a personal AI assistant inspired by Tony Stark's
 system from *Spider-Man: Far From Home*. Runs in your browser with a live

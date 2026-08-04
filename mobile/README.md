@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../assets/logo/icon-1024.png" alt="E.D.I.T.H." width="120" />
+</p>
+
 # E.D.I.T.H. — Android app
 
 Empaqueta el HUD de E.D.I.T.H. como una app Android nativa (Capacitor), con
