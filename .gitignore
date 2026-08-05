@@ -7,5 +7,6 @@ data/known_faces/*/
 data/model.yml
 data/labels.json
 data/logs/*.jsonl
+data/spotify_token.json
 !data/known_faces/.gitkeep
 !data/logs/.gitkeep

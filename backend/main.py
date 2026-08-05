@@ -11,9 +11,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from pydantic import BaseModel
 
+import spotify_client
 from brain import EdithBrain
 from logbook import log_sighting, recent_sightings
 from vision import FaceEngine
@@ -156,7 +157,36 @@ def status() -> dict:
         "brain_connected": bool(
             os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("GROQ_API_KEY")
         ),
+        "spotify_configured": spotify_client.is_configured(),
+        "spotify_connected": spotify_client.is_connected(),
     }
+
+
+@app.get("/api/spotify/login")
+def spotify_login() -> Response:
+    if not spotify_client.is_configured():
+        return HTMLResponse(
+            "Spotify no esta configurado: falta SPOTIFY_CLIENT_ID / "
+            "SPOTIFY_CLIENT_SECRET en el .env del servidor.",
+            status_code=400,
+        )
+    return RedirectResponse(spotify_client.get_authorize_url())
+
+
+@app.get("/api/spotify/callback")
+def spotify_callback(code: str | None = None, error: str | None = None) -> HTMLResponse:
+    if error:
+        return HTMLResponse(f"Spotify devolvio un error: {error}", status_code=400)
+    if not code:
+        return HTMLResponse("Falta el parametro 'code' en la respuesta de Spotify.", status_code=400)
+    try:
+        spotify_client.exchange_code(code)
+    except Exception as exc:  # noqa: BLE001
+        return HTMLResponse(f"No se pudo conectar con Spotify: {exc}", status_code=500)
+    return HTMLResponse(
+        "<h2>E.D.I.T.H. ya esta conectada a Spotify.</h2>"
+        "<p>Podes cerrar esta pestana y volver a la app.</p>"
+    )
 
 
 @app.get("/")

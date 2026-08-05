@@ -25,6 +25,9 @@ optional connection to a real LLM for open-ended conversation.
 - **Text-to-speech** — spoken replies via the browser's `speechSynthesis` API.
 - **HUD-style interface** — dark sci-fi console with live optical feed,
   console/transcript panel, and status indicators.
+- **Spotify control** (optional) — "Edith, pon musica de X", "pausa la
+  musica", "siguiente cancion", "cancion anterior". Requires a Spotify
+  Developer app and Premium — see [Spotify setup](#spotify-setup).
 
 ## Architecture
 
@@ -38,10 +41,12 @@ backend/         FastAPI server
   vision.py      Face detection/recognition (OpenCV Haar cascade + LBPH)
   brain.py       Command router + optional Claude/Groq API conversation
   logbook.py     Append-only sighting log
+  spotify_client.py  Spotify OAuth + playback control (optional)
 mobile/          Android app (Capacitor) — see mobile/README.md
 data/
   known_faces/   Per-person face crops (created as you enroll people)
   logs/          Sighting log (JSONL)
+  spotify_token.json  Spotify OAuth tokens (gitignored, created on login)
 ```
 
 The camera and microphone are accessed by the browser (required for real
@@ -80,6 +85,31 @@ enable voice commands.
 - **Full conversation**: set `ANTHROPIC_API_KEY` (Claude) or `GROQ_API_KEY`
   (Groq) in `.env` to let E.D.I.T.H. answer open-ended questions via an LLM
   instead of just local commands.
+
+## Spotify setup
+
+Optional. Lets E.D.I.T.H. actually control playback (not just open a link).
+Requires **Spotify Premium** and at least one active device (the Spotify app
+open somewhere — phone, PC, speaker).
+
+1. Create an app at the
+   [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+2. In the app's settings, add this exact Redirect URI:
+   `http://127.0.0.1:8000/api/spotify/callback` (Spotify only allows plain
+   HTTP for loopback redirects using the literal `127.0.0.1`, not
+   `localhost`).
+3. Copy the **Client ID** and **Client Secret** into `backend/.env`:
+   ```
+   SPOTIFY_CLIENT_ID=...
+   SPOTIFY_CLIENT_SECRET=...
+   ```
+4. Restart the backend, then, **from a browser on the same PC running the
+   server**, open `http://127.0.0.1:8000/api/spotify/login` and approve
+   access. This is a one-time step — the server saves a refresh token to
+   `data/spotify_token.json` (gitignored) and renews it automatically after
+   that, so the phone app doesn't need to log in separately.
+5. Try it: "Edith, pon musica de &lt;artist or song&gt;", "pausa la musica",
+   "siguiente cancion", "cancion anterior".
 
 ## Android app
 
