@@ -18,7 +18,7 @@ from brain import EdithBrain
 from logbook import log_sighting, recent_sightings
 from vision import FaceEngine
 
-load_dotenv()
+load_dotenv(override=True)  # .env should win over stray OS-level env vars
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 
