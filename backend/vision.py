@@ -25,6 +25,26 @@ MATCH_THRESHOLD = 75.0
 os.makedirs(KNOWN_FACES_DIR, exist_ok=True)
 
 
+def _write_image(path: str, img: np.ndarray) -> bool:
+    """cv2.imwrite silently fails on Windows for non-ASCII paths (accents, ñ,
+    etc.) since it uses the local codepage internally rather than Unicode.
+    Encode in-memory and write via Python's own (Unicode-safe) file I/O."""
+    ok, buf = cv2.imencode(".png", img)
+    if not ok:
+        return False
+    with open(path, "wb") as fh:
+        fh.write(buf.tobytes())
+    return True
+
+
+def _read_gray_image(path: str) -> np.ndarray | None:
+    """Unicode-safe counterpart to cv2.imread(path, IMREAD_GRAYSCALE)."""
+    data = np.fromfile(path, dtype=np.uint8)
+    if data.size == 0:
+        return None
+    return cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
+
+
 @dataclass
 class Sighting:
     box: tuple[int, int, int, int]
@@ -88,7 +108,8 @@ class FaceEngine:
         person_dir = os.path.join(KNOWN_FACES_DIR, name)
         os.makedirs(person_dir, exist_ok=True)
         existing = len(os.listdir(person_dir))
-        cv2.imwrite(os.path.join(person_dir, f"{existing:04d}.png"), crop)
+        if not _write_image(os.path.join(person_dir, f"{existing:04d}.png"), crop):
+            return False, "Failed to save the face image."
 
         self.train()
         return True, f"Enrolled sample #{existing + 1} for {name}."
@@ -101,17 +122,24 @@ class FaceEngine:
         if not os.path.isdir(KNOWN_FACES_DIR):
             return
 
-        for idx, name in enumerate(sorted(os.listdir(KNOWN_FACES_DIR))):
+        for name in sorted(os.listdir(KNOWN_FACES_DIR)):
             person_dir = os.path.join(KNOWN_FACES_DIR, name)
             if not os.path.isdir(person_dir):
                 continue
+            person_samples = []
             for fname in os.listdir(person_dir):
-                img = cv2.imread(os.path.join(person_dir, fname), cv2.IMREAD_GRAYSCALE)
+                img = _read_gray_image(os.path.join(person_dir, fname))
                 if img is None:
                     continue
-                samples.append(cv2.resize(img, FACE_SIZE))
-                label_ids.append(idx)
+                person_samples.append(cv2.resize(img, FACE_SIZE))
+            if not person_samples:
+                # Directory exists but every image failed to decode — don't
+                # list this person as "known" with zero actual training data.
+                continue
+            idx = len(labels)
             labels[idx] = name
+            samples.extend(person_samples)
+            label_ids.extend([idx] * len(person_samples))
 
         if not samples:
             self.trained = False
