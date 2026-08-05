@@ -72,6 +72,11 @@
         Ingresa la URL del backend E.D.I.T.H. (ej: http://192.168.1.50:8000)
       </p>
       <input id="settingsInput" type="text" placeholder="http://192.168.1.50:8000" />
+      <p style="font-size:12px;color:var(--text-dim);margin-top:10px;">
+        API key (solo si el servidor tiene EDITH_API_KEY configurada, por
+        ejemplo cuando se accede por internet en vez de la red local)
+      </p>
+      <input id="settingsApiKeyInput" type="text" placeholder="opcional" />
       <div class="modal-actions">
         <button id="settingsCancel" class="btn">CANCELAR</button>
         <button id="settingsSave" class="btn btn-primary">GUARDAR</button>

@@ -111,6 +111,31 @@ open somewhere — phone, PC, speaker).
 5. Try it: "Edith, pon musica de &lt;artist or song&gt;", "pausa la musica",
    "siguiente cancion", "cancion anterior".
 
+## Using the app outside your home network
+
+By default the phone app talks to the backend over your local WiFi (same
+network as the PC running it). To use it from anywhere (mobile data, another
+network), you need to expose the backend publicly and **lock it down first**:
+
+1. **Set `EDITH_API_KEY`** in `backend/.env` to a long random string. Without
+   this, anyone who finds your public URL can enroll/delete faces, chat
+   (burning your LLM credits), and control your Spotify — the backend has no
+   other authentication.
+2. **Expose the backend** — the simplest option with no router configuration
+   is a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/):
+   install `cloudflared`, then run
+   ```
+   cloudflared tunnel --url http://localhost:8000
+   ```
+   which prints a public `https://*.trycloudflare.com` URL that forwards to
+   your local server (this quick-tunnel URL changes each time you restart
+   `cloudflared`; a free Cloudflare account lets you set up a named tunnel
+   with a permanent URL instead). Port-forwarding on your router works too
+   but exposes your home IP directly — a tunnel is safer and easier.
+3. In the app's **SERVIDOR** settings, set the server URL to that public
+   `https://` URL, and the **API key** field to the same value as
+   `EDITH_API_KEY`.
+
 ## Android app
 
 There's also a native Android app in `mobile/` (Capacitor) that reuses this

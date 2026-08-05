@@ -8,7 +8,7 @@ import time
 import cv2
 import numpy as np
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
@@ -42,6 +42,23 @@ _sighting_cooldown: dict[str, float] = {}
 COOLDOWN_SECONDS = 30.0
 
 
+def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
+    """No-op unless EDITH_API_KEY is set — LAN-only setups stay frictionless.
+    Once you expose the backend to the internet (tunnel/port-forward), set
+    EDITH_API_KEY so random visitors can't enroll faces, burn your LLM
+    credits, or control your Spotify."""
+    expected = os.environ.get("EDITH_API_KEY")
+    if not expected:
+        return
+    if x_api_key != expected:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key.")
+
+
+def _check_ws_api_key(api_key: str | None) -> bool:
+    expected = os.environ.get("EDITH_API_KEY")
+    return not expected or api_key == expected
+
+
 def _decode_frame(data_url: str) -> np.ndarray:
     header, _, b64data = data_url.partition(",")
     raw = base64.b64decode(b64data or header)
@@ -53,8 +70,11 @@ def _decode_frame(data_url: str) -> np.ndarray:
 
 
 @app.websocket("/ws/vision")
-async def vision_ws(websocket: WebSocket) -> None:
+async def vision_ws(websocket: WebSocket, api_key: str | None = None) -> None:
     global last_seen, last_seen_ts
+    if not _check_ws_api_key(api_key):
+        await websocket.close(code=4401)
+        return
     await websocket.accept()
     try:
         while True:
@@ -90,7 +110,7 @@ class ChatResponse(BaseModel):
     reply: str
 
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/api/chat", response_model=ChatResponse, dependencies=[Depends(require_api_key)])
 def chat(req: ChatRequest) -> ChatResponse:
     text = req.text.strip()
     lowered = text.lower()
@@ -120,7 +140,7 @@ class EnrollResponse(BaseModel):
     message: str
 
 
-@app.post("/api/faces/enroll", response_model=EnrollResponse)
+@app.post("/api/faces/enroll", response_model=EnrollResponse, dependencies=[Depends(require_api_key)])
 def enroll(req: EnrollRequest) -> EnrollResponse:
     name = req.name.strip()
     if not name:
@@ -133,18 +153,18 @@ def enroll(req: EnrollRequest) -> EnrollResponse:
     return EnrollResponse(success=success, message=message)
 
 
-@app.get("/api/faces")
+@app.get("/api/faces", dependencies=[Depends(require_api_key)])
 def list_faces() -> dict:
     return {"names": engine.known_names()}
 
 
-@app.delete("/api/faces/{name}")
+@app.delete("/api/faces/{name}", dependencies=[Depends(require_api_key)])
 def delete_face(name: str) -> dict:
     removed = engine.remove_person(name)
     return {"removed": removed}
 
 
-@app.get("/api/log")
+@app.get("/api/log", dependencies=[Depends(require_api_key)])
 def get_log(limit: int = 20) -> dict:
     return {"sightings": recent_sightings(limit)}
 
@@ -163,7 +183,10 @@ def status() -> dict:
 
 
 @app.get("/api/spotify/login")
-def spotify_login() -> Response:
+def spotify_login(key: str | None = None) -> Response:
+    expected = os.environ.get("EDITH_API_KEY")
+    if expected and key != expected:
+        return HTMLResponse("Falta o es invalido el parametro ?key=", status_code=401)
     if not spotify_client.is_configured():
         return HTMLResponse(
             "Spotify no esta configurado: falta SPOTIFY_CLIENT_ID / "

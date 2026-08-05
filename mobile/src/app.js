@@ -8,9 +8,22 @@ const IS_NATIVE = Capacitor.isNativePlatform();
 const WAKE_WORD = "edith";
 const FRAME_INTERVAL_MS = 1200;
 const BACKEND_URL_KEY = "edith_backend_url";
+const API_KEY_PREF_KEY = "edith_api_key";
 
 let API_BASE = ""; // same-origin in browser; resolved from Preferences on native
 let WS_BASE = "";
+let API_KEY = ""; // optional shared secret, only needed if the backend sets EDITH_API_KEY
+
+function apiFetch(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (API_KEY) headers["X-API-Key"] = API_KEY;
+  return fetch(`${API_BASE}${path}`, { ...options, headers });
+}
+
+function wsUrlWithKey(path) {
+  const url = `${WS_BASE}${path}`;
+  return API_KEY ? `${url}?api_key=${encodeURIComponent(API_KEY)}` : url;
+}
 
 // ---- DOM refs (shared with the web frontend markup) ----
 const video = document.getElementById("video");
@@ -39,6 +52,7 @@ const faceList = document.getElementById("faceList");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsModal = document.getElementById("settingsModal");
 const settingsInput = document.getElementById("settingsInput");
+const settingsApiKeyInput = document.getElementById("settingsApiKeyInput");
 const settingsSave = document.getElementById("settingsSave");
 const settingsCancel = document.getElementById("settingsCancel");
 
@@ -81,6 +95,9 @@ async function resolveBackendUrl() {
     return true;
   }
 
+  const storedKey = await Preferences.get({ key: API_KEY_PREF_KEY });
+  API_KEY = storedKey.value || "";
+
   const stored = await Preferences.get({ key: BACKEND_URL_KEY });
   if (stored.value) {
     setBackendUrl(stored.value);
@@ -99,6 +116,7 @@ function setBackendUrl(url) {
 function openSettings(forced = false) {
   settingsModal.classList.add("open");
   settingsInput.value = API_BASE || "http://";
+  if (settingsApiKeyInput) settingsApiKeyInput.value = API_KEY || "";
   settingsCancel.style.display = forced ? "none" : "inline-block";
 }
 
@@ -120,6 +138,10 @@ if (settingsSave) {
     }
     setBackendUrl(url);
     await Preferences.set({ key: BACKEND_URL_KEY, value: url });
+
+    API_KEY = (settingsApiKeyInput && settingsApiKeyInput.value.trim()) || "";
+    await Preferences.set({ key: API_KEY_PREF_KEY, value: API_KEY });
+
     closeSettings();
     appendLine("system", `Servidor configurado: ${url}`);
     checkStatus();
@@ -149,7 +171,7 @@ async function sendCommand(text) {
   if (!text.trim()) return;
   appendLine("user", text);
   try {
-    const res = await fetch(`${API_BASE}/api/chat`, {
+    const res = await apiFetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
@@ -200,7 +222,7 @@ function captureFrameDataUrl(quality = 0.6) {
 }
 
 function startVisionLoop() {
-  ws = new WebSocket(`${WS_BASE}/ws/vision`);
+  ws = new WebSocket(wsUrlWithKey("/ws/vision"));
   ws.onopen = () => setPill(statusVision, "on");
   ws.onclose = () => setPill(statusVision, "error");
   ws.onerror = () => setPill(statusVision, "error");
@@ -446,7 +468,7 @@ enrollBtn.addEventListener("click", async () => {
   }
   const image = captureFrameDataUrl(0.85);
   try {
-    const res = await fetch(`${API_BASE}/api/faces/enroll`, {
+    const res = await apiFetch("/api/faces/enroll", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, image }),
@@ -494,7 +516,7 @@ startBtn.addEventListener("click", async () => {
 
 async function checkStatus() {
   try {
-    const res = await fetch(`${API_BASE}/api/status`);
+    const res = await apiFetch("/api/status");
     const data = await res.json();
     setPill(statusBrain, data.brain_connected ? "on" : "error");
     if (!data.brain_connected) {
@@ -508,7 +530,7 @@ async function checkStatus() {
 async function refreshLog() {
   if (!API_BASE && IS_NATIVE) return;
   try {
-    const res = await fetch(`${API_BASE}/api/log?limit=15`);
+    const res = await apiFetch("/api/log?limit=15");
     const data = await res.json();
     logList.innerHTML = "";
     for (const entry of data.sightings) {
@@ -525,7 +547,7 @@ async function refreshLog() {
 async function refreshFaces() {
   if (!API_BASE && IS_NATIVE) return;
   try {
-    const res = await fetch(`${API_BASE}/api/faces`);
+    const res = await apiFetch("/api/faces");
     const data = await res.json();
     faceList.innerHTML = "";
     if (data.names.length === 0) {
@@ -540,7 +562,7 @@ async function refreshFaces() {
       const btn = document.createElement("button");
       btn.textContent = "eliminar";
       btn.addEventListener("click", async () => {
-        await fetch(`${API_BASE}/api/faces/${encodeURIComponent(name)}`, { method: "DELETE" });
+        await apiFetch(`/api/faces/${encodeURIComponent(name)}`, { method: "DELETE" });
         refreshFaces();
       });
       li.appendChild(btn);
