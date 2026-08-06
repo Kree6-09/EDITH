@@ -1,0 +1,42 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8ff9ff"/>
+      <stop offset="100%" stop-color="#33d9ec"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- scaled to fit Android adaptive icon safe zone (~66% of canvas) -->
+  <g transform="translate(512,512) scale(0.72) translate(-512,-512)">
+    <circle cx="512" cy="512" r="392" fill="none" stroke="url(#cyan)" stroke-width="10" opacity="0.95" filter="url(#glow)"/>
+    <circle cx="512" cy="512" r="352" fill="none" stroke="#4df3ff" stroke-width="3" opacity="0.35"/>
+
+    <g stroke="#8ff9ff" stroke-width="10" stroke-linecap="round" filter="url(#softGlow)">
+      <line x1="512" y1="76"  x2="512" y2="132"/>
+      <line x1="512" y1="892" x2="512" y2="948"/>
+      <line x1="76"  y1="512" x2="132" y2="512"/>
+      <line x1="892" y1="512" x2="948" y2="512"/>
+    </g>
+
+    <circle cx="770" cy="256" r="16" fill="#8ff9ff" filter="url(#softGlow)"/>
+
+    <g filter="url(#glow)">
+      <path d="M 656.2 612.9 A 176 176 0 1 1 656.2 411.1" fill="none" stroke="url(#cyan)" stroke-width="92" stroke-linecap="round"/>
+      <rect x="512" y="467" width="222" height="90" rx="10" fill="url(#cyan)"/>
+    </g>
+  </g>
+</svg>

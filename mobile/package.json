@@ -1,0 +1,23 @@
+{
+  "name": "grace-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "G.R.A.C.E. Android app (Capacitor WebView wrapper with native voice)",
+  "scripts": {
+    "build": "esbuild src/app.js --bundle --outfile=www/app.js --format=iife --platform=browser --target=es2019",
+    "sync": "npm run build && cap sync android",
+    "android:build": "npm run sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/camera": "^8.2.2",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/preferences": "^8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "esbuild": "^0.28.1"
+  }
+}
