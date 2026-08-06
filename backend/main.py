@@ -1,4 +1,4 @@
-"""E.D.I.T.H. backend: FastAPI server for voice/camera-driven AI assistant."""
+"""G.R.A.C.E. backend: FastAPI server for voice/camera-driven AI assistant."""
 from __future__ import annotations
 
 import base64
@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from pydantic import BaseModel
 
 import spotify_client
-from brain import EdithBrain
+from brain import GraceBrain
 from logbook import log_sighting, recent_sightings
 from vision import FaceEngine
 
@@ -23,7 +23,7 @@ load_dotenv(override=True)  # .env should win over stray OS-level env vars
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 
-app = FastAPI(title="E.D.I.T.H.")
+app = FastAPI(title="G.R.A.C.E.")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,7 +32,7 @@ app.add_middleware(
 )
 
 engine = FaceEngine()
-brain = EdithBrain()
+brain = GraceBrain()
 
 # Tracks the most recent recognition snapshot so voice commands like
 # "who is that" can answer without a fresh frame round-trip.
@@ -43,11 +43,11 @@ COOLDOWN_SECONDS = 30.0
 
 
 def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
-    """No-op unless EDITH_API_KEY is set — LAN-only setups stay frictionless.
+    """No-op unless GRACE_API_KEY is set — LAN-only setups stay frictionless.
     Once you expose the backend to the internet (tunnel/port-forward), set
-    EDITH_API_KEY so random visitors can't enroll faces, burn your LLM
+    GRACE_API_KEY so random visitors can't enroll faces, burn your LLM
     credits, or control your Spotify."""
-    expected = os.environ.get("EDITH_API_KEY")
+    expected = os.environ.get("GRACE_API_KEY")
     if not expected:
         return
     if x_api_key != expected:
@@ -55,7 +55,7 @@ def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
 
 
 def _check_ws_api_key(api_key: str | None) -> bool:
-    expected = os.environ.get("EDITH_API_KEY")
+    expected = os.environ.get("GRACE_API_KEY")
     return not expected or api_key == expected
 
 
@@ -184,7 +184,7 @@ def status() -> dict:
 
 @app.get("/api/spotify/login")
 def spotify_login(key: str | None = None) -> Response:
-    expected = os.environ.get("EDITH_API_KEY")
+    expected = os.environ.get("GRACE_API_KEY")
     if expected and key != expected:
         return HTMLResponse("Falta o es invalido el parametro ?key=", status_code=401)
     if not spotify_client.is_configured():
@@ -207,7 +207,7 @@ def spotify_callback(code: str | None = None, error: str | None = None) -> HTMLR
     except Exception as exc:  # noqa: BLE001
         return HTMLResponse(f"No se pudo conectar con Spotify: {exc}", status_code=500)
     return HTMLResponse(
-        "<h2>E.D.I.T.H. ya esta conectada a Spotify.</h2>"
+        "<h2>G.R.A.C.E. ya esta conectada a Spotify.</h2>"
         "<p>Podes cerrar esta pestana y volver a la app.</p>"
     )
 

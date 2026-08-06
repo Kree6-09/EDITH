@@ -21,7 +21,7 @@
   const logList = document.getElementById("logList");
   const faceList = document.getElementById("faceList");
 
-  const WAKE_WORD = "edith";
+  const WAKE_WORD = "grace";
   const FRAME_INTERVAL_MS = 1200;
 
   let ws = null;
@@ -69,7 +69,7 @@
         body: JSON.stringify({ text }),
       });
       const data = await res.json();
-      appendLine("edith", data.reply);
+      appendLine("grace", data.reply);
       speak(data.reply);
     } catch (err) {
       appendLine("system", `Connection error: ${err}`);
@@ -165,7 +165,7 @@
       if (command) {
         sendCommand(command);
       } else {
-        appendLine("edith", "Yes? I'm listening.");
+        appendLine("grace", "Yes? I'm listening.");
         speak("Yes?");
       }
     };
@@ -241,7 +241,7 @@
       startBtn.textContent = "SYSTEM ONLINE";
       micBtn.disabled = false;
       enrollBtn.disabled = false;
-      appendLine("system", "E.D.I.T.H. online. Camera and reasoning core connected.");
+      appendLine("system", "G.R.A.C.E. online. Camera and reasoning core connected.");
       speak("Systems online.");
       checkStatus();
     } catch (err) {

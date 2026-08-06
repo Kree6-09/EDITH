@@ -39,22 +39,18 @@
     </g>
     <circle cx="770" cy="256" r="16" fill="#8ff9ff" filter="url(#softGlow)"/>
     <g filter="url(#glow)">
-      <g fill="url(#cyan)">
-        <rect x="368" y="300" width="96"  height="424" rx="10"/>
-        <rect x="368" y="300" width="288" height="90"  rx="10"/>
-        <rect x="368" y="467" width="248" height="82"  rx="10"/>
-        <rect x="368" y="634" width="288" height="90"  rx="10"/>
-      </g>
+      <path d="M 656.2 612.9 A 176 176 0 1 1 656.2 411.1" fill="none" stroke="url(#cyan)" stroke-width="92" stroke-linecap="round"/>
+      <rect x="512" y="467" width="222" height="90" rx="10" fill="url(#cyan)"/>
     </g>
   </g>
 
   <!-- wordmark -->
   <g filter="url(#glow)">
     <text x="430" y="255" font-family="Courier New, ui-monospace, monospace" font-size="112" font-weight="700"
-          letter-spacing="10" fill="url(#cyan)">E.D.I.T.H.</text>
+          letter-spacing="10" fill="url(#cyan)">G.R.A.C.E.</text>
   </g>
-  <text x="432" y="305" font-family="Courier New, ui-monospace, monospace" font-size="30"
-        letter-spacing="6" fill="#6fa3ab">EVEN DEAD, I'M THE HERO</text>
+  <text x="432" y="305" font-family="Courier New, ui-monospace, monospace" font-size="22"
+        letter-spacing="3" fill="#6fa3ab">GENERAL RESPONSE &amp; AUTONOMOUS COMPUTING ENGINE</text>
 
   <!-- underline accent -->
   <line x1="432" y1="330" x2="1500" y2="330" stroke="#1c5a63" stroke-width="2"/>

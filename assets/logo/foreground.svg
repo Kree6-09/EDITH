@@ -35,12 +35,8 @@
     <circle cx="770" cy="256" r="16" fill="#8ff9ff" filter="url(#softGlow)"/>
 
     <g filter="url(#glow)">
-      <g fill="url(#cyan)">
-        <rect x="368" y="300" width="96"  height="424" rx="10"/>
-        <rect x="368" y="300" width="288" height="90"  rx="10"/>
-        <rect x="368" y="467" width="248" height="82"  rx="10"/>
-        <rect x="368" y="634" width="288" height="90"  rx="10"/>
-      </g>
+      <path d="M 656.2 612.9 A 176 176 0 1 1 656.2 411.1" fill="none" stroke="url(#cyan)" stroke-width="92" stroke-linecap="round"/>
+      <rect x="512" y="467" width="222" height="90" rx="10" fill="url(#cyan)"/>
     </g>
   </g>
 </svg>

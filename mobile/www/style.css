@@ -229,8 +229,8 @@ input[type="text"]:focus { outline: none; border-color: var(--cyan); }
 .line { margin-bottom: 10px; }
 .line.user { color: var(--text); }
 .line.user::before { content: "YOU  "; color: var(--text-dim); }
-.line.edith { color: var(--cyan); }
-.line.edith::before { content: "EDITH  "; color: var(--cyan); font-weight: bold; }
+.line.grace { color: var(--cyan); }
+.line.grace::before { content: "GRACE  "; color: var(--cyan); font-weight: bold; }
 .line.system { color: var(--text-dim); font-style: italic; }
 
 .text-form {

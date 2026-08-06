@@ -1,8 +1,8 @@
 {
-  "name": "edith-mobile",
+  "name": "grace-mobile",
   "version": "1.0.0",
   "private": true,
-  "description": "E.D.I.T.H. Android app (Capacitor WebView wrapper with native voice)",
+  "description": "G.R.A.C.E. Android app (Capacitor WebView wrapper with native voice)",
   "scripts": {
     "build": "esbuild src/app.js --bundle --outfile=www/app.js --format=iife --platform=browser --target=es2019",
     "sync": "npm run build && cap sync android",

@@ -1,21 +1,21 @@
 <p align="center">
-  <img src="assets/logo/wordmark-1600x480.png" alt="E.D.I.T.H." width="600" />
+  <img src="assets/logo/wordmark-1600x480.png" alt="G.R.A.C.E." width="600" />
 </p>
 
-*Even Dead, I'm The Hero* — a personal AI assistant inspired by Tony Stark's
-system from *Spider-Man: Far From Home*. Runs in your browser with a live
-camera feed, face recognition, voice commands, text-to-speech replies, and an
-optional connection to a real LLM for open-ended conversation.
+*General Response & Autonomous Computing Engine* — a personal AI assistant
+that runs in your browser with a live camera feed, face recognition, voice
+commands, text-to-speech replies, and an optional connection to a real LLM
+for open-ended conversation.
 
 ## Features
 
-- **Voice recognition** — say the wake word "Edith" followed by a command
+- **Voice recognition** — say the wake word "Grace" followed by a command
   (uses the browser's Web Speech API). Text input is always available as a
   fallback.
 - **Camera / vision** — live webcam feed streamed to the backend for face
   detection and recognition (OpenCV, no GPU required).
 - **Person recognition** — enroll people by name from a live camera frame;
-  E.D.I.T.H. recognizes and labels them in the feed and can answer "who is
+  G.R.A.C.E. recognizes and labels them in the feed and can answer "who is
   that?" style questions.
 - **Sighting log** — a running log of who's been seen and when, shown in the
   HUD.
@@ -25,7 +25,7 @@ optional connection to a real LLM for open-ended conversation.
 - **Text-to-speech** — spoken replies via the browser's `speechSynthesis` API.
 - **HUD-style interface** — dark sci-fi console with live optical feed,
   console/transcript panel, and status indicators.
-- **Spotify control** (optional) — "Edith, pon musica de X", "pausa la
+- **Spotify control** (optional) — "Grace, pon musica de X", "pausa la
   musica", "siguiente cancion", "cancion anterior". Requires a Spotify
   Developer app and Premium — see [Spotify setup](#spotify-setup).
 
@@ -79,16 +79,16 @@ enable voice commands.
 - **Enroll a person**: type their name in the "Subject name" box and click
   **ENROLL FACE** while they're in frame. Repeat a few times from different
   angles for better recognition.
-- **Voice command**: say "Edith, what time is it?" or "Edith, who do you
+- **Voice command**: say "Grace, what time is it?" or "Grace, who do you
   see?".
 - **Text command**: type into the console input and press SEND.
 - **Full conversation**: set `ANTHROPIC_API_KEY` (Claude) or `GROQ_API_KEY`
-  (Groq) in `.env` to let E.D.I.T.H. answer open-ended questions via an LLM
+  (Groq) in `.env` to let G.R.A.C.E. answer open-ended questions via an LLM
   instead of just local commands.
 
 ## Spotify setup
 
-Optional. Lets E.D.I.T.H. actually control playback (not just open a link).
+Optional. Lets G.R.A.C.E. actually control playback (not just open a link).
 Requires **Spotify Premium** and at least one active device (the Spotify app
 open somewhere — phone, PC, speaker).
 
@@ -108,7 +108,7 @@ open somewhere — phone, PC, speaker).
    access. This is a one-time step — the server saves a refresh token to
    `data/spotify_token.json` (gitignored) and renews it automatically after
    that, so the phone app doesn't need to log in separately.
-5. Try it: "Edith, pon musica de &lt;artist or song&gt;", "pausa la musica",
+5. Try it: "Grace, pon musica de &lt;artist or song&gt;", "pausa la musica",
    "siguiente cancion", "cancion anterior".
 
 ## Using the app outside your home network
@@ -117,7 +117,7 @@ By default the phone app talks to the backend over your local WiFi (same
 network as the PC running it). To use it from anywhere (mobile data, another
 network), you need to expose the backend publicly and **lock it down first**:
 
-1. **Set `EDITH_API_KEY`** in `backend/.env` to a long random string. Without
+1. **Set `GRACE_API_KEY`** in `backend/.env` to a long random string. Without
    this, anyone who finds your public URL can enroll/delete faces, chat
    (burning your LLM credits), and control your Spotify — the backend has no
    other authentication.
@@ -134,7 +134,7 @@ network), you need to expose the backend publicly and **lock it down first**:
    but exposes your home IP directly — a tunnel is safer and easier.
 3. In the app's **SERVIDOR** settings, set the server URL to that public
    `https://` URL, and the **API key** field to the same value as
-   `EDITH_API_KEY`.
+   `GRACE_API_KEY`.
 
 ## Android app
 
@@ -146,7 +146,7 @@ how to get a build.
 
 ## Notes
 
-- No API key? E.D.I.T.H. still works — time, date, system status, and face
+- No API key? G.R.A.C.E. still works — time, date, system status, and face
   identification are all handled locally.
 - Face recognition uses OpenCV's LBPH recognizer, which is lightweight but
   less accurate than deep-learning face embeddings. Enroll multiple samples

@@ -1,4 +1,4 @@
-"""Face detection and recognition engine for E.D.I.T.H.
+"""Face detection and recognition engine for G.R.A.C.E.
 
 Uses OpenCV's Haar cascade for detection and LBPH for recognition. Both are
 lightweight (no dlib/face_recognition dependency) so the whole system runs

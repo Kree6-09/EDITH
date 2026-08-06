@@ -5,14 +5,14 @@ import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 import { TextToSpeech } from "@capacitor-community/text-to-speech";
 
 const IS_NATIVE = Capacitor.isNativePlatform();
-const WAKE_WORD = "edith";
+const WAKE_WORD = "grace";
 const FRAME_INTERVAL_MS = 1200;
-const BACKEND_URL_KEY = "edith_backend_url";
-const API_KEY_PREF_KEY = "edith_api_key";
+const BACKEND_URL_KEY = "grace_backend_url";
+const API_KEY_PREF_KEY = "grace_api_key";
 
 let API_BASE = ""; // same-origin in browser; resolved from Preferences on native
 let WS_BASE = "";
-let API_KEY = ""; // optional shared secret, only needed if the backend sets EDITH_API_KEY
+let API_KEY = ""; // optional shared secret, only needed if the backend sets GRACE_API_KEY
 
 function apiFetch(path, options = {}) {
   const headers = { ...(options.headers || {}) };
@@ -177,7 +177,7 @@ async function sendCommand(text) {
       body: JSON.stringify({ text }),
     });
     const data = await res.json();
-    appendLine("edith", data.reply);
+    appendLine("grace", data.reply);
     speak(data.reply);
   } catch (err) {
     appendLine("system", `Error de conexion: ${err}`);
@@ -341,7 +341,7 @@ function handleUtterance(said) {
   if (command) {
     sendCommand(command);
   } else {
-    appendLine("edith", "Si? Te escucho.");
+    appendLine("grace", "Si? Te escucho.");
     speak("Si?");
   }
 }
@@ -502,7 +502,7 @@ startBtn.addEventListener("click", async () => {
     micBtn.disabled = false;
     enrollBtn.disabled = false;
     if (switchCameraBtn) switchCameraBtn.disabled = false;
-    appendLine("system", "E.D.I.T.H. en linea. Camara y nucleo de razonamiento conectados.");
+    appendLine("system", "G.R.A.C.E. en linea. Camara y nucleo de razonamiento conectados.");
     speak("Sistemas en linea.");
     checkStatus();
   } catch (err) {

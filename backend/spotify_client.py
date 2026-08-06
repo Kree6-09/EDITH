@@ -1,4 +1,4 @@
-"""Spotify Web API client: OAuth login + playback control for E.D.I.T.H.
+"""Spotify Web API client: OAuth login + playback control for G.R.A.C.E.
 
 Uses the Authorization Code flow (server-side, with the client secret kept
 here and never sent to the frontend). Playback control requires Spotify

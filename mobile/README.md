@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="../assets/logo/icon-1024.png" alt="E.D.I.T.H." width="120" />
+  <img src="../assets/logo/icon-1024.png" alt="G.R.A.C.E." width="120" />
 </p>
 
-# E.D.I.T.H. — Android app
+# G.R.A.C.E. — Android app
 
-Empaqueta el HUD de E.D.I.T.H. como una app Android nativa (Capacitor), con
+Empaqueta el HUD de G.R.A.C.E. como una app Android nativa (Capacitor), con
 reconocimiento de voz y texto-a-voz **nativos** de Android (no dependen del
 navegador), cámara en vivo y el mismo panel de chat/registro que la versión
-web. La app se conecta a tu propio backend E.D.I.T.H. (el mismo servidor
+web. La app se conecta a tu propio backend G.R.A.C.E. (el mismo servidor
 FastAPI de `../backend`) a través de la red.
 
 ## Cómo conseguir la APK
@@ -20,7 +20,7 @@ sube como artefacto del run. Para descargarla:
 
 1. Ve a la pestaña **Actions** del repo en GitHub.
 2. Abre el run más reciente de **"Build Android APK"**.
-3. Descarga el artefacto **`edith-debug-apk`** (contiene `app-debug.apk`).
+3. Descarga el artefacto **`grace-debug-apk`** (contiene `app-debug.apk`).
 4. Instálala en tu teléfono (activa "Instalar apps de origenes desconocidos"
    si Android lo pide).
 
@@ -55,7 +55,7 @@ cd mobile/android
    Wi-Fi, VPN, o un servidor con IP pública). Podés cambiarla luego con el
    botón **SERVIDOR** en la barra superior.
 3. Concede los permisos de cámara y micrófono cuando Android los solicite.
-4. Di "Edith" seguido de un comando, o escribe en la consola.
+4. Di "Grace" seguido de un comando, o escribe en la consola.
 
 ## Notas técnicas
 

@@ -1,4 +1,4 @@
-"""E.D.I.T.H. conversational brain: local command handling + optional LLM fallback (Claude or Groq)."""
+"""G.R.A.C.E. conversational brain: local command handling + optional LLM fallback (Claude or Groq)."""
 from __future__ import annotations
 
 import os
@@ -9,13 +9,13 @@ from datetime import datetime
 import spotify_client
 
 SYSTEM_PROMPT = (
-    "You are E.D.I.T.H. (Even Dead, I'm The Hero), a calm, precise AI assistant "
-    "inspired by Tony Stark's system from Spider-Man: Far From Home. You have "
-    "access to a live camera feed with face recognition and a microphone with "
-    "voice command input. Respond concisely, like a sharp tactical assistant — "
-    "no filler, no long paragraphs unless asked. Address the user directly. "
-    "You do not control any weapons or drones; you are an information, "
-    "security-monitoring, and conversation assistant only."
+    "You are G.R.A.C.E. (General Response & Autonomous Computing Engine), a "
+    "calm, precise personal AI assistant. You have access to a live camera "
+    "feed with face recognition and a microphone with voice command input. "
+    "Respond concisely, like a sharp tactical assistant — no filler, no long "
+    "paragraphs unless asked. Address the user directly. You do not control "
+    "any weapons or drones; you are an information, security-monitoring, and "
+    "conversation assistant only."
 )
 
 GROQ_MODEL = "llama-3.3-70b-versatile"
@@ -61,7 +61,7 @@ def _get_client():
     return _provider, _client
 
 
-class EdithBrain:
+class GraceBrain:
     def __init__(self) -> None:
         self.history: list[dict] = []
 
@@ -77,7 +77,7 @@ class EdithBrain:
         if re.search(r"\b(hello|hi|hey)\b", lowered):
             return "Online and listening. What do you need?"
         if re.search(r"\bwho (made|created|built) you\b", lowered):
-            return "I was built as a personal AI assistant project, in the spirit of Tony Stark's E.D.I.T.H."
+            return "I was built as a personal AI assistant project — G.R.A.C.E., a General Response & Autonomous Computing Engine."
         if re.search(r"\b(thank you|thanks)\b", lowered):
             return "Anytime."
         return None

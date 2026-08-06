@@ -1,4 +1,4 @@
-"""Sighting/event log for E.D.I.T.H. — a simple append-only JSON log."""
+"""Sighting/event log for G.R.A.C.E. — a simple append-only JSON log."""
 from __future__ import annotations
 
 import json
